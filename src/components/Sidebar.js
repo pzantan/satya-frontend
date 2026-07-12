@@ -1,0 +1,304 @@
+'use client';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import styles from './Sidebar.module.css';
+
+const navItems = [
+  {
+    group: 'Utama',
+    items: [
+      {
+        href: '/dashboard',
+        label: 'Dashboard',
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+        ),
+      },
+    ],
+  },
+
+  {
+    group: 'Master Data',
+    items: [
+      {
+        href: '/master/customers',
+        label: 'Pelanggan',
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        ),
+      },
+      {
+        href: '/master/materials',
+        label: 'Material',
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+            <polyline points="2 17 12 22 22 17"/>
+            <polyline points="2 12 12 17 22 12"/>
+          </svg>
+        ),
+      },
+      {
+        href: '/master/machines',
+        label: 'Mesin',
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.07 4.93l-1.41 1.41M4.93 19.07l-1.41 1.41M20 12h2M2 12h2M19.07 19.07l-1.41-1.41M4.93 4.93l-1.41 1.41M12 2v2M12 20v2"/>
+          </svg>
+        ),
+      },
+      {
+        href: '/master/subconts',
+        label: 'Subcontractor',
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="2" y="7" width="20" height="14" rx="2"/>
+            <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+            <line x1="12" y1="12" x2="12" y2="16"/>
+            <line x1="10" y1="14" x2="14" y2="14"/>
+          </svg>
+        ),
+      },
+      {
+        href: '/master/drawings',
+        label: 'Master Item',
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <path d="M12 18v-6"/>
+            <path d="M8 18v-1"/>
+            <path d="M16 18v-3"/>
+          </svg>
+        ),
+      },
+      {
+        href: '/master/toolkind',
+        label: 'Toolkind',
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+          </svg>
+        ),
+      },
+      {
+        href: '/master/sales',
+        label: 'Sales',
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        ),
+      },
+      {
+        href: '/master/proses',
+        label: 'Proses',
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+            <line x1="8" y1="21" x2="16" y2="21"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+        ),
+      },
+    ],
+  },
+  {
+    group: 'Transaksi',
+    items: [
+      {
+        href: '/wo',
+        label: 'Work Order',
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+        ),
+      },
+    ],
+  },
+  {
+    group: 'Produksi',
+    items: [
+      {
+        href: '/produksi/prepare',
+        label: 'Prepare Production',
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+            <polyline points="2 17 12 22 22 17"/>
+            <polyline points="2 12 12 17 22 12"/>
+          </svg>
+        ),
+      },
+      {
+        href: '/produksi/fg',
+        label: 'Finished Goods',
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          </svg>
+        ),
+      },
+    ],
+  },
+  {
+    group: 'Pengiriman & Keuangan',
+    items: [
+      {
+        href: '/delivery',
+        label: 'Pengiriman',
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="1" y="3" width="15" height="13" rx="2"/>
+            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+            <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+          </svg>
+        ),
+      },
+      {
+        href: '/invoice',
+        label: 'Invoice',
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+        ),
+      },
+    ],
+  },
+];
+
+export default function Sidebar({ user, onLogout, onMobileClose }) {
+  const pathname = usePathname();
+  const [openGroup, setOpenGroup] = useState('Utama'); // Default open group
+
+  // Auto-open the group that contains the active route on mount
+  useEffect(() => {
+    for (const group of navItems) {
+      const hasActive = group.items.some(
+        (item) => pathname === item.href || pathname.startsWith(item.href + '/')
+      );
+      if (hasActive) {
+        setOpenGroup(group.group);
+        break;
+      }
+    }
+  }, [pathname]);
+
+  const toggleGroup = (groupName) => {
+    setOpenGroup(openGroup === groupName ? '' : groupName);
+  };
+
+  return (
+    <aside className={styles.sidebar}>
+      {/* Mobile Close Button */}
+      <div className={styles.mobileCloseWrapper}>
+         <button className={styles.mobileCloseBtn} onClick={onMobileClose}>
+           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+             <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+           </svg>
+         </button>
+      </div>
+
+      {/* Logo */}
+      <div className={styles.logo}>
+        <div className={styles.logoIcon}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div className={styles.logoText}>
+          <span className={styles.logoName}>Satya Teknik</span>
+          <span className={styles.logoSub}>Indonesia</span>
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <nav className={styles.nav}>
+        {navItems.map((group) => {
+          const isOpen = openGroup === group.group;
+          return (
+            <div key={group.group} className={styles.navGroup}>
+              <button 
+                className={styles.navGroupHeader} 
+                onClick={() => toggleGroup(group.group)}
+              >
+                <span className={styles.navGroupLabel}>{group.group}</span>
+                <span className={`${styles.navGroupChevron} ${isOpen ? styles.navGroupChevronOpen : ''}`}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </span>
+              </button>
+              
+              <div className={`${styles.navGroupContent} ${isOpen ? styles.navGroupContentOpen : ''}`}>
+                {group.items.map((item) => {
+                  const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
+                      onClick={onMobileClose}
+                    >
+                      <span className={styles.navIcon}>{item.icon}</span>
+                      <span className={styles.navLabel}>{item.label}</span>
+                      {isActive && <span className={styles.navActiveIndicator} />}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </nav>
+
+      {/* User profile + Logout */}
+      <div className={styles.userArea}>
+        <div className={styles.userInfo}>
+          <div className={styles.userAvatar}>
+            {user?.full_name?.[0] || user?.user_name?.[0] || 'U'}
+          </div>
+          <div className={styles.userMeta}>
+            <span className={styles.userName}>{user?.full_name || user?.user_name}</span>
+            <span className={styles.userRole}>
+              {user?.role === '1' ? 'Administrator' : `Role ${user?.role}`}
+            </span>
+          </div>
+        </div>
+        <button
+          className={styles.logoutBtn}
+          onClick={onLogout}
+          title="Keluar"
+          id="btn-logout"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+        </button>
+      </div>
+    </aside>
+  );
+}
