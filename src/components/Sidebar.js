@@ -157,14 +157,25 @@ const navItems = [
           </svg>
         ),
       },
+      {
+        href: '/produksi/ng',
+        label: 'Not Good (NG)',
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="15" y1="9" x2="9" y2="15"/>
+            <line x1="9" y1="9" x2="15" y2="15"/>
+          </svg>
+        ),
+      },
     ],
   },
   {
-    group: 'Pengiriman & Keuangan',
+    group: 'Pengiriman',
     items: [
       {
-        href: '/delivery',
-        label: 'Pengiriman',
+        href: '/delivery/customer',
+        label: 'Delivery Customer',
         icon: (
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <rect x="1" y="3" width="15" height="13" rx="2"/>
@@ -173,6 +184,23 @@ const navItems = [
           </svg>
         ),
       },
+      {
+        href: '/delivery/subcont',
+        label: 'Delivery Subcont',
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="2" y="7" width="20" height="14" rx="2"/>
+            <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+            <line x1="12" y1="12" x2="12" y2="16"/>
+            <line x1="10" y1="14" x2="14" y2="14"/>
+          </svg>
+        ),
+      },
+    ],
+  },
+  {
+    group: 'Keuangan',
+    items: [
       {
         href: '/invoice',
         label: 'Invoice',
