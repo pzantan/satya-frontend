@@ -56,7 +56,8 @@ export default function WorkOrderPage() {
   const downloadPdf = async (wo_no) => {
     try {
       const token = localStorage.getItem('satya_token');
-      const response = await fetch(`http://localhost:5000/api/wo/${wo_no}/pdf`, {
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${API_BASE}/api/wo/${wo_no}/pdf`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

@@ -6,6 +6,8 @@ import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
 import api from '@/lib/api';
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
 export default function WorkOrderAddPage() {
   const router = useRouter();
   
@@ -249,7 +251,7 @@ export default function WorkOrderAddPage() {
                   {selectedDrawing.linkpict ? (
                     <div style={{ flex: 1, borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)', minHeight: 0 }}>
                       <iframe 
-                        src={`http://localhost:5000/api/drawings/${selectedDrawing.id_drawing}/preview?type=drawing`}
+                        src={`${API_BASE}/api/drawings/${selectedDrawing.id_drawing}/preview?type=drawing`}
                         style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
                         title="PDF Preview"
                       />

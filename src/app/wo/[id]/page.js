@@ -6,6 +6,8 @@ import { useParams } from 'next/navigation';
 import AppLayout from '@/components/AppLayout';
 import api from '@/lib/api';
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
 export default function WorkOrderDetailPage() {
   const { id } = useParams();
   const [wo, setWo] = useState(null);
@@ -74,7 +76,7 @@ export default function WorkOrderDetailPage() {
           <button
             className="btn btn-primary"
             style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-            onClick={() => window.open(`http://localhost:5000/api/wo/${encodeURIComponent(wo.wo_no)}/pdf`, '_blank')}
+            onClick={() => window.open(`${API_BASE}/api/wo/${encodeURIComponent(wo.wo_no)}/pdf`, '_blank')}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>
             Cetak PDF
@@ -162,7 +164,7 @@ export default function WorkOrderDetailPage() {
               {drawing && drawing.linkpict ? (
                 <div style={{ flex: 1, borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)', minHeight: 0 }}>
                   <iframe
-                    src={`http://localhost:5000/api/drawings/${drawing.id_drawing}/preview?type=drawing`}
+                    src={`${API_BASE}/api/drawings/${drawing.id_drawing}/preview?type=drawing`}
                     style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
                     title="Drawing PDF Preview"
                   />
