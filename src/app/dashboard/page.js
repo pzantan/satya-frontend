@@ -4,32 +4,29 @@ import { useRouter } from 'next/navigation';
 import AppLayout from '@/components/AppLayout';
 import styles from './dashboard.module.css';
 import api from '@/lib/api';
-
-// ... (keep the statCards array outside, or it's fine we can just replace the imports and the return)
-
-
-const statCards = [
-  {
-    id: 'stat-customers',
-    label: 'Total Pelanggan',
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-        <circle cx="9" cy="7" r="4"/>
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-      </svg>
-    ),
-    color: 'blue',
-    endpoint: '/api/customers',
-  },
-];
+import Link from 'next/link';
 
 export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
-  const [stats, setStats] = useState({ customers: '...' });
   const [loading, setLoading] = useState(true);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [activeTab, setActiveTab] = useState('wo'); // 'wo' or 'invoice'
+
+  const [data, setData] = useState({
+    summary: {
+      totalCustomers: 0,
+      totalWos: 0,
+      activeWos: 0,
+      totalInvoiceAmount: 0,
+      totalInvoices: 0
+    },
+    monthlyData: [],
+    topCustomers: [],
+    recentWos: [],
+    recentInvoices: [],
+    availableYears: [new Date().getFullYear()]
+  });
 
   useEffect(() => {
     const token = localStorage.getItem('satya_token');
@@ -43,21 +40,23 @@ export default function DashboardPage() {
     if (userData) {
       setUser(JSON.parse(userData));
     }
+  }, [router]);
 
-    // Load dashboard stats
-    const loadStats = async () => {
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      setLoading(true);
       try {
-        const res = await api.get('/api/customers');
-        setStats((prev) => ({ ...prev, customers: res.data?.length ?? 0 }));
-      } catch {
-        setStats((prev) => ({ ...prev, customers: '-' }));
+        const res = await api.get(`/api/dashboard?year=${selectedYear}`);
+        setData(res);
+      } catch (err) {
+        console.error('Failed to load dashboard data:', err);
       } finally {
         setLoading(false);
       }
     };
 
-    loadStats();
-  }, [router]);
+    fetchDashboardData();
+  }, [selectedYear]);
 
   const handleLogout = () => {
     localStorage.removeItem('satya_token');
@@ -66,17 +65,47 @@ export default function DashboardPage() {
     router.push('/login');
   };
 
+  const fmtCurrency = (num) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(num || 0);
+  };
+
+  const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-');
+  const fmtNum = (n) => (n !== null && n !== undefined ? Number(n).toLocaleString('id-ID') : '0');
+
+  // Chart math
+  const maxInvoice = data.monthlyData.length > 0 ? Math.max(...data.monthlyData.map(d => d.invoiceAmount), 1) : 1;
+  const maxWo = data.monthlyData.length > 0 ? Math.max(...data.monthlyData.map(d => d.woCount), 1) : 1;
+  
+  // Top customers progress bars math
+  const maxCustAmount = data.topCustomers.length > 0 ? Math.max(...data.topCustomers.map(c => c.amount), 1) : 1;
+
   return (
     <AppLayout user={user} onLogout={handleLogout}>
       {/* Top Bar */}
       <header className={styles.topbar}>
         <div>
-          <h1 className={styles.pageTitle}>Dashboard</h1>
+          <h1 className={styles.pageTitle}>Dashboard Analitik</h1>
           <p className={styles.pageSubtitle}>
-            Selamat datang, <strong>{user?.full_name || user?.user_name}</strong>
+            Selamat datang kembali, <strong>{user?.full_name || user?.user_name}</strong>
           </p>
         </div>
         <div className={styles.topbarRight}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Tahun Analisis:</span>
+            <select
+              className={styles.selectYear}
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+            >
+              {data.availableYears.map(y => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+          </div>
           <div className={styles.dateChip}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
@@ -88,8 +117,9 @@ export default function DashboardPage() {
       </header>
 
       <div className={styles.content}>
-        {/* Stat Cards */}
+        {/* Summary Stats Grid */}
         <div className={styles.statsGrid}>
+          {/* Card 1: Total Customers */}
           <div className={`${styles.statCard} ${styles.statBlue}`}>
             <div className={styles.statIcon}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -100,26 +130,27 @@ export default function DashboardPage() {
               </svg>
             </div>
             <div className={styles.statBody}>
-              <span className={styles.statLabel}>Total Pelanggan</span>
-              <span className={styles.statValue}>{loading ? '...' : stats.customers}</span>
+              <span className={styles.statLabel}>Total Pelanggan Aktif</span>
+              <span className={styles.statValue}>{loading ? '...' : fmtNum(data.summary.totalCustomers)}</span>
             </div>
           </div>
 
+          {/* Card 2: Work Order Tahun Ini */}
           <div className={`${styles.statCard} ${styles.statGreen}`}>
             <div className={styles.statIcon}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                 <polyline points="14 2 14 8 20 8"/>
                 <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
-                <polyline points="10 9 9 9 8 9"/>
               </svg>
             </div>
             <div className={styles.statBody}>
-              <span className={styles.statLabel}>Work Order</span>
-              <span className={styles.statValue}>—</span>
+              <span className={styles.statLabel}>Work Order Baru ({selectedYear})</span>
+              <span className={styles.statValue}>{loading ? '...' : fmtNum(data.summary.totalWos)}</span>
             </div>
           </div>
 
+          {/* Card 3: Work Order Aktif */}
           <div className={`${styles.statCard} ${styles.statOrange}`}>
             <div className={styles.statIcon}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -127,77 +158,197 @@ export default function DashboardPage() {
               </svg>
             </div>
             <div className={styles.statBody}>
-              <span className={styles.statLabel}>Produksi Aktif</span>
-              <span className={styles.statValue}>—</span>
+              <span className={styles.statLabel}>WO Sedang Proses ({selectedYear})</span>
+              <span className={styles.statValue}>{loading ? '...' : fmtNum(data.summary.activeWos)}</span>
             </div>
           </div>
 
+          {/* Card 4: Total Pendapatan Invoice */}
           <div className={`${styles.statCard} ${styles.statCyan}`}>
             <div className={styles.statIcon}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="1" y="3" width="15" height="13" rx="2"/>
-                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
-                <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+                <line x1="12" y1="1" x2="12" y2="23"/>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
               </svg>
             </div>
             <div className={styles.statBody}>
-              <span className={styles.statLabel}>Pengiriman</span>
-              <span className={styles.statValue}>—</span>
+              <span className={styles.statLabel}>Nilai Invoice ({selectedYear})</span>
+              <span className={styles.statValue} style={{ fontSize: '1.4rem' }}>
+                {loading ? '...' : fmtCurrency(data.summary.totalInvoiceAmount)}
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Info Panels */}
-        <div className={styles.panelGrid}>
-          <div className={`card ${styles.panel}`}>
-            <div className={styles.panelHeader}>
-              <h2 className={styles.panelTitle}>Selamat Datang di Sistem Baru</h2>
+        {/* Tren Monthly Chart */}
+        <div className={styles.chartCard}>
+          <div className={styles.chartHeader}>
+            <div>
+              <h2 className={styles.chartTitle}>Tren Aktivitas Bulanan & Pendapatan ({selectedYear})</h2>
+              <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+                Visualisasi perbandingan jumlah Work Order dengan total nilai Invoice setiap bulan.
+              </p>
             </div>
-            <div className={styles.panelBody}>
-              <div className={styles.welcomeContent}>
-                <div className={styles.welcomeIcon}>
-                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                    <path d="M2 17l10 5 10-5"/>
-                    <path d="M2 12l10 5 10-5"/>
-                  </svg>
-                </div>
-                <h3>Satya Teknik Indonesia</h3>
-                <p>Aplikasi telah berhasil dimigrasikan dari CodeIgniter ke Next.js + Express. Backend API tersedia di <code>http://localhost:5000</code> dengan dokumentasi lengkap di <a href="http://localhost:5000/api-docs" target="_blank" rel="noreferrer">Swagger UI</a>.</p>
-                <div className={styles.techStack}>
-                  <span className={styles.techBadge} style={{ background: '#dbeafe', color: '#1d4ed8' }}>Next.js 15</span>
-                  <span className={styles.techBadge} style={{ background: '#dcfce7', color: '#15803d' }}>Express.js</span>
-                  <span className={styles.techBadge} style={{ background: '#fce7f3', color: '#9d174d' }}>Prisma ORM</span>
-                  <span className={styles.techBadge} style={{ background: '#fef9c3', color: '#92400e' }}>MySQL</span>
-                  <span className={styles.techBadge} style={{ background: '#ede9fe', color: '#5b21b6' }}>JWT Auth</span>
-                  <span className={styles.techBadge} style={{ background: '#ffedd5', color: '#c2410c' }}>Swagger UI</span>
-                </div>
+            <div className={styles.chartLegend}>
+              <div className={styles.legendItem}>
+                <div className={styles.legendColor} style={{ background: '#2563eb' }}></div>
+                <span>Work Order (Banyaknya WO)</span>
+              </div>
+              <div className={styles.legendItem}>
+                <div className={styles.legendColor} style={{ background: '#10b981' }}></div>
+                <span>Invoice (Rupiah)</span>
               </div>
             </div>
           </div>
 
-          <div className={`card ${styles.panel}`}>
-            <div className={styles.panelHeader}>
-              <h2 className={styles.panelTitle}>Modul Tersedia</h2>
+          {loading ? (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '280px', color: 'var(--text-muted)' }}>
+              Memuat grafik tren...
             </div>
-            <div className={styles.moduleList}>
-              {[
-                { label: 'Master Pelanggan', href: '/master/customers', ready: true },
-                { label: 'Master Material', href: '/master/materials', ready: true },
-                { label: 'Master Mesin', href: '/master/machines', ready: false },
-                { label: 'Work Order (WO)', href: '/wo', ready: false },
-                { label: 'Produksi', href: '/produksi', ready: false },
-                { label: 'Finished Goods (FG)', href: '/fg', ready: false },
-                { label: 'Pengiriman', href: '/delivery', ready: false },
-                { label: 'Invoice', href: '/invoice', ready: false },
-              ].map((mod) => (
-                <a key={mod.href} href={mod.ready ? mod.href : '#'} className={`${styles.moduleItem} ${!mod.ready ? styles.moduleDisabled : ''}`}>
-                  <span className={styles.moduleLabel}>{mod.label}</span>
-                  <span className={mod.ready ? `badge badge-success` : `badge badge-warning`}>
-                    {mod.ready ? 'Aktif' : 'Coming Soon'}
-                  </span>
-                </a>
-              ))}
+          ) : data.monthlyData.length === 0 ? (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '280px', color: 'var(--text-muted)' }}>
+              Tidak ada data transaksi di tahun {selectedYear}.
+            </div>
+          ) : (
+            <div className={styles.chartBody}>
+              {data.monthlyData.map((d, index) => {
+                const heightWo = `${(d.woCount / maxWo) * 80 + 5}%`;
+                const heightInv = `${(d.invoiceAmount / maxInvoice) * 80 + 5}%`;
+
+                return (
+                  <div key={index} className={styles.chartColumn}>
+                    {/* Tooltip */}
+                    <div className={styles.chartTooltip}>
+                      <strong style={{ borderBottom: '1px solid rgba(255,255,255,0.2)', paddingBottom: '2px', marginBottom: '2px' }}>
+                        {d.monthName} {selectedYear}
+                      </strong>
+                      <span>📁 WO Baru: <strong>{d.woCount} unit</strong></span>
+                      <span>📦 Total Qty WO: <strong>{fmtNum(d.woQty)} pcs</strong></span>
+                      <span>💰 Total Invoice: <strong>{fmtCurrency(d.invoiceAmount)}</strong></span>
+                    </div>
+
+                    <div className={styles.barGroup}>
+                      {/* Bar 1: WO Count (Blue) */}
+                      <div className={styles.barValue1} style={{ height: heightWo }} title={`WO: ${d.woCount}`}></div>
+                      {/* Bar 2: Invoice Amount (Green) */}
+                      <div className={styles.barValue2} style={{ height: heightInv }} title={`Invoice: ${fmtCurrency(d.invoiceAmount)}`}></div>
+                    </div>
+                    <span className={styles.barLabel}>{d.monthName}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Lower Grid: Side-by-Side Panels */}
+        <div className={styles.panelGrid}>
+          {/* Top Customers Card */}
+          <div className="card">
+            <div className={styles.panelHeader}>
+              <h2 className={styles.panelTitle}>Top 5 Pelanggan Terbesar ({selectedYear})</h2>
+              <p style={{ margin: '4px 0 0 0', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+                Berdasarkan total nominal invoice yang telah terbit sepanjang tahun.
+              </p>
+            </div>
+            <div className={styles.panelBody} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {loading ? (
+                <div style={{ color: 'var(--text-muted)' }}>Memuat data pelanggan...</div>
+              ) : data.topCustomers.length === 0 ? (
+                <div style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Belum ada transaksi invoice pada tahun ini.</div>
+              ) : (
+                data.topCustomers.map((cust, i) => {
+                  const widthPct = `${(cust.amount / maxCustAmount) * 100}%`;
+                  return (
+                    <div key={i} className={styles.custProgressRow}>
+                      <div className={styles.custInfo}>
+                        <span className={styles.custName}>{cust.name}</span>
+                        <span className={styles.custValue}>{fmtCurrency(cust.amount)}</span>
+                      </div>
+                      <div className={styles.progressBarContainer}>
+                        <div className={styles.progressBarFill} style={{ width: widthPct }}></div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+
+          {/* Recent Activity Card with Tabs */}
+          <div className="card">
+            <div className={styles.panelHeader} style={{ paddingBottom: '0' }}>
+              <h2 className={styles.panelTitle} style={{ marginBottom: '12px' }}>Aktivitas Transaksi Terbaru</h2>
+              <div className={styles.tabContainer}>
+                <div 
+                  className={`${styles.tabItem} ${activeTab === 'wo' ? styles.tabActive : ''}`} 
+                  onClick={() => setActiveTab('wo')}
+                >
+                  Work Order (Terbaru)
+                </div>
+                <div 
+                  className={`${styles.tabItem} ${activeTab === 'invoice' ? styles.tabActive : ''}`} 
+                  onClick={() => setActiveTab('invoice')}
+                >
+                  Invoice (Terbaru)
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.panelBody} style={{ paddingTop: '8px' }}>
+              {loading ? (
+                <div style={{ color: 'var(--text-muted)' }}>Memuat aktivitas...</div>
+              ) : activeTab === 'wo' ? (
+                // WOs List
+                data.recentWos.length === 0 ? (
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Belum ada data Work Order.</div>
+                ) : (
+                  <div className={styles.recentList}>
+                    {data.recentWos.map((wo, i) => (
+                      <div key={i} className={styles.recentItem}>
+                        <div className={styles.recentMain}>
+                          <span className={styles.recentTitle}>{wo.wo_no}</span>
+                          <span className={styles.recentSub}>{wo.customer_name} — Qty: {fmtNum(wo.qty)} pcs</span>
+                        </div>
+                        <div className={styles.recentMeta}>
+                          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{fmtDate(wo.create_date)}</span>
+                          <span 
+                            className={styles.statusIndicator}
+                            style={{ 
+                              background: wo.sts === 1 ? '#dcfce7' : '#fff7ed',
+                              color: wo.sts === 1 ? '#15803d' : '#c2410c'
+                            }}
+                          >
+                            {wo.sts === 1 ? 'Selesai' : 'Sedang Proses'}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )
+              ) : (
+                // Invoices List
+                data.recentInvoices.length === 0 ? (
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Belum ada data Invoice.</div>
+                ) : (
+                  <div className={styles.recentList}>
+                    {data.recentInvoices.map((inv, i) => (
+                      <div key={i} className={styles.recentItem}>
+                        <div className={styles.recentMain}>
+                          <span className={styles.recentTitle}>{inv.noinv}</span>
+                          <span className={styles.recentSub}>{inv.customer_name}</span>
+                        </div>
+                        <div className={styles.recentMeta}>
+                          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{fmtDate(inv.tglinv)}</span>
+                          <span className={styles.recentAmount} style={{ color: '#059669' }}>
+                            {fmtCurrency(inv.totalhrg)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )
+              )}
             </div>
           </div>
         </div>
