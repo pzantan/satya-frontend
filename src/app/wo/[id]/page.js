@@ -13,6 +13,33 @@ export default function WorkOrderDetailPage() {
   const [wo, setWo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [downloading, setDownloading] = useState(false);
+
+  const downloadPdf = async () => {
+    setDownloading(true);
+    try {
+      const token = localStorage.getItem('satya_token');
+      const response = await fetch(`${API_BASE}/api/wo/${encodeURIComponent(wo.wo_no)}/pdf`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Gagal mencetak PDF');
+      }
+      
+      const blob = await response.blob();
+      const fileURL = URL.createObjectURL(blob);
+      window.open(fileURL, '_blank');
+      setTimeout(() => URL.revokeObjectURL(fileURL), 10000);
+    } catch (err) {
+      console.error(err);
+      alert('Gagal mencetak PDF');
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   useEffect(() => {
     if (id) loadDetail();
@@ -76,10 +103,11 @@ export default function WorkOrderDetailPage() {
           <button
             className="btn btn-primary"
             style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-            onClick={() => window.open(`${API_BASE}/api/wo/${encodeURIComponent(wo.wo_no)}/pdf`, '_blank')}
+            onClick={downloadPdf}
+            disabled={downloading}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>
-            Cetak PDF
+            {downloading ? 'Mengunduh...' : 'Cetak PDF'}
           </button>
         </div>
 
