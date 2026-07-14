@@ -311,7 +311,7 @@ export default function DashboardPage() {
                           <span className={styles.recentSub}>{wo.customer_name} — Qty: {fmtNum(wo.qty)} pcs</span>
                         </div>
                         <div className={styles.recentMeta}>
-                          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{fmtDate(wo.create_date)}</span>
+                          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{fmtDate(wo.tgl_wo)}</span>
                           <span 
                             className={styles.statusIndicator}
                             style={{ 
