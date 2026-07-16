@@ -225,40 +225,9 @@ const navItems = [
   },
 ];
 
-export default function Sidebar({ user, onLogout, onMobileClose }) {
+export default function Sidebar({ user, onLogout, onMobileClose, onChangePassword }) {
   const pathname = usePathname();
   const [openGroup, setOpenGroup] = useState('Utama'); // Default open group
-  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
-  const [cpForm, setCpForm] = useState({ old_password: '', new_password: '', confirm_password: '' });
-  const [cpError, setCpError] = useState('');
-  const [cpLoading, setCpLoading] = useState(false);
-
-  const handleChangePasswordSubmit = async (e) => {
-    e.preventDefault();
-    if (cpForm.new_password !== cpForm.confirm_password) {
-      setCpError('Konfirmasi password baru tidak cocok.');
-      return;
-    }
-    if (cpForm.new_password.length < 4) {
-      setCpError('Password baru minimal harus 4 karakter.');
-      return;
-    }
-    setCpLoading(true);
-    setCpError('');
-    try {
-      await api.put('/api/auth/change-password', {
-        old_password: cpForm.old_password,
-        new_password: cpForm.new_password
-      });
-      alert('Password Anda berhasil diganti!');
-      setIsChangePasswordOpen(false);
-      setCpForm({ old_password: '', new_password: '', confirm_password: '' });
-    } catch (err) {
-      setCpError(err.message || 'Gagal mengubah password.');
-    } finally {
-      setCpLoading(false);
-    }
-  };
 
   const filteredNavItems = navItems.map(group => {
     if (group.group === 'Master Data') {
@@ -387,7 +356,7 @@ export default function Sidebar({ user, onLogout, onMobileClose }) {
         </div>
         <button
           className={styles.logoutBtn}
-          onClick={() => setIsChangePasswordOpen(true)}
+          onClick={onChangePassword}
           title="Ganti Password Saya"
           style={{ marginRight: '8px' }}
         >
@@ -408,70 +377,6 @@ export default function Sidebar({ user, onLogout, onMobileClose }) {
           </svg>
         </button>
       </div>
-
-      {isChangePasswordOpen && (
-        <div className="modal-overlay" style={{ zIndex: 10000 }}>
-          <div className="modal">
-            <div className="modal-header">
-              <h3 className="modal-title">Ganti Password Saya</h3>
-              <button className="modal-close" onClick={() => { setIsChangePasswordOpen(false); setCpError(''); }}>
-                ✕
-              </button>
-            </div>
-            <form onSubmit={handleChangePasswordSubmit}>
-              <div className="modal-body">
-                {cpError && <div className="alert alert-error">{cpError}</div>}
-                
-                <div className="form-group">
-                  <label className="form-label">Password Lama:</label>
-                  <input 
-                    type="password" 
-                    className="form-control" 
-                    required
-                    value={cpForm.old_password} 
-                    onChange={(e) => setCpForm({...cpForm, old_password: e.target.value})}
-                  />
-                </div>
-                
-                <div className="form-group">
-                  <label className="form-label">Password Baru:</label>
-                  <input 
-                    type="password" 
-                    className="form-control" 
-                    required
-                    value={cpForm.new_password} 
-                    onChange={(e) => setCpForm({...cpForm, new_password: e.target.value})}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">Konfirmasi Password Baru:</label>
-                  <input 
-                    type="password" 
-                    className="form-control" 
-                    required
-                    value={cpForm.confirm_password} 
-                    onChange={(e) => setCpForm({...cpForm, confirm_password: e.target.value})}
-                  />
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button 
-                  type="button" 
-                  className="btn btn-outline" 
-                  onClick={() => { setIsChangePasswordOpen(false); setCpError(''); }}
-                  disabled={cpLoading}
-                >
-                  Batal
-                </button>
-                <button type="submit" className="btn btn-primary" disabled={cpLoading}>
-                  {cpLoading ? 'Menyimpan...' : 'Simpan Password'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </aside>
   );
 }
