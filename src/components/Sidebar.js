@@ -228,9 +228,28 @@ export default function Sidebar({ user, onLogout, onMobileClose }) {
   const pathname = usePathname();
   const [openGroup, setOpenGroup] = useState('Utama'); // Default open group
 
+  const filteredNavItems = navItems.map(group => {
+    if (group.group === 'Master Data') {
+      const items = [...group.items];
+      if (user?.role === '1') {
+        items.push({
+          href: '/master/roles',
+          label: 'Pengaturan Akses',
+          icon: (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          )
+        });
+      }
+      return { ...group, items };
+    }
+    return group;
+  });
+
   // Auto-open the group that contains the active route on mount
   useEffect(() => {
-    for (const group of navItems) {
+    for (const group of filteredNavItems) {
       const hasActive = group.items.some(
         (item) => pathname === item.href || pathname.startsWith(item.href + '/')
       );
@@ -273,7 +292,7 @@ export default function Sidebar({ user, onLogout, onMobileClose }) {
 
       {/* Navigation */}
       <nav className={styles.nav}>
-        {navItems.map((group) => {
+        {filteredNavItems.map((group) => {
           const isOpen = openGroup === group.group;
           return (
             <div key={group.group} className={styles.navGroup}>
