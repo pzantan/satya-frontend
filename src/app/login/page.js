@@ -50,7 +50,7 @@ function LoginForm() {
       localStorage.setItem('satya_user', JSON.stringify(data.user));
       document.cookie = `satya_token=${data.token}; path=/; max-age=${8 * 60 * 60}`;
 
-      router.push('/dashboard');
+      router.push('/home');
     } catch {
       setError('Tidak dapat terhubung ke server. Pastikan backend berjalan.');
     } finally {
