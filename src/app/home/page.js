@@ -167,7 +167,7 @@ export default function HomePage() {
         </div>
 
         {/* Tren Monthly Chart (Neutral version: WO vs FG Production) */}
-        <div className={styles.chartCard}>
+        <div className={styles.chartCard} id="tour-home-chart">
           <div className={styles.chartHeader}>
             <div>
               <h2 className={styles.chartTitle}>Tren Pembuatan WO & Produksi FG ({selectedYear})</h2>
