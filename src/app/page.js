@@ -5,7 +5,7 @@ export default async function Home() {
   const cookieStore = await cookies();
   const token = cookieStore.get('satya_token');
   if (token) {
-    redirect('/dashboard');
+    redirect('/home');
   } else {
     redirect('/login');
   }
