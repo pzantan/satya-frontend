@@ -185,7 +185,7 @@ export default function WorkOrderPage() {
                     <th>Customer</th>
                     <th>Qty</th>
                     <th>Status</th>
-                    <th style={{ width: '100px', textAlign: 'center' }}>Aksi</th>
+                     <th style={{ width: '140px', textAlign: 'center' }}>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -215,14 +215,34 @@ export default function WorkOrderPage() {
                             <Link
                               href={`/wo/${encodeURIComponent(row.wo_no)}`}
                               className="btn btn-outline"
-                              style={{ padding: '6px' }}
+                              style={{ 
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: '32px',
+                                height: '32px',
+                                minWidth: '32px',
+                                padding: 0,
+                                flexShrink: 0,
+                                borderRadius: '6px'
+                              }}
                               title="View Detail WO"
                             >
                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                             </Link>
                             <button 
                               className="btn btn-primary" 
-                              style={{ padding: '6px' }}
+                              style={{ 
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: '32px',
+                                height: '32px',
+                                minWidth: '32px',
+                                padding: 0,
+                                flexShrink: 0,
+                                borderRadius: '6px'
+                              }}
                               onClick={() => downloadPdf(row.wo_no)}
                               title="Cetak PDF"
                             >
@@ -231,7 +251,19 @@ export default function WorkOrderPage() {
                             {canDelete && (
                               <button
                                 className="btn btn-outline"
-                                style={{ padding: '6px', color: 'var(--danger, #ef4444)', borderColor: 'var(--danger, #ef4444)' }}
+                                style={{ 
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  width: '32px',
+                                  height: '32px',
+                                  minWidth: '32px',
+                                  padding: 0,
+                                  flexShrink: 0,
+                                  borderRadius: '6px',
+                                  color: 'var(--danger, #ef4444)',
+                                  borderColor: 'var(--danger, #ef4444)'
+                                }}
                                 onClick={() => handleDelete(row.wo_no)}
                                 title="Hapus WO"
                               >
