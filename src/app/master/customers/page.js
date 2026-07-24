@@ -20,7 +20,7 @@ export default function MasterCustomerPage() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState('');
-  const initialForm = { id_customer: '', nm_customer: '', alamat: '', up_customer: '' };
+  const initialForm = { id_customer: '', nm_customer: '', alamat: '', up_customer: '', kd_accurate: '' };
   const [form, setForm] = useState(initialForm);
 
   useEffect(() => {
@@ -70,7 +70,13 @@ export default function MasterCustomerPage() {
   };
 
   const openEditModal = (c) => {
-    setForm({ id_customer: c.id_customer, nm_customer: c.nm_customer || '', alamat: c.alamat || '', up_customer: c.up_customer || '' });
+    setForm({
+      id_customer: c.id_customer,
+      nm_customer: c.nm_customer || '',
+      alamat: c.alamat || '',
+      up_customer: c.up_customer || '',
+      kd_accurate: c.kd_accurate || ''
+    });
     setIsEditMode(true);
     setFormError('');
     setIsModalOpen(true);
@@ -171,6 +177,7 @@ export default function MasterCustomerPage() {
                       <tr>
                         <th style={{ width: '60px' }}>ID</th>
                         <th>Nama Pelanggan</th>
+                        <th>Kode Accurate</th>
                         <th>UP Customer</th>
                         <th className="hide-on-mobile">Alamat</th>
                         <th style={{ width: '140px', textAlign: 'right' }}>Aksi</th>
@@ -179,7 +186,7 @@ export default function MasterCustomerPage() {
                     <tbody>
                       {customers.length === 0 ? (
                         <tr>
-                          <td colSpan="5" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+                          <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
                             {search ? 'Tidak ada pelanggan yang cocok.' : 'Belum ada data pelanggan.'}
                           </td>
                         </tr>
@@ -188,6 +195,15 @@ export default function MasterCustomerPage() {
                           <tr key={c.id_customer}>
                             <td>{c.id_customer}</td>
                             <td style={{ fontWeight: '600' }}>{c.nm_customer}</td>
+                            <td>
+                              {c.kd_accurate ? (
+                                <span style={{ fontFamily: 'monospace', background: 'var(--bg-hover, #e2e8f0)', padding: '2px 6px', borderRadius: '4px', fontSize: '0.85rem' }}>
+                                  {c.kd_accurate}
+                                </span>
+                              ) : (
+                                <span style={{ color: 'var(--text-muted)' }}>-</span>
+                              )}
+                            </td>
                             <td>{c.up_customer || '-'}</td>
                             <td className="hide-on-mobile">{c.alamat || '-'}</td>
                             <td style={{ textAlign: 'right', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
@@ -248,6 +264,10 @@ export default function MasterCustomerPage() {
                 <div className="form-group">
                   <label className="form-label" htmlFor="up_customer">UP Customer (PIC)</label>
                   <input type="text" id="up_customer" name="up_customer" className="form-control" value={form.up_customer} onChange={handleFormChange} placeholder="Contoh: Bpk. Budi" />
+                </div>
+                <div className="form-group">
+                  <label className="form-label" htmlFor="kd_accurate">Kode Accurate (Customer Code)</label>
+                  <input type="text" id="kd_accurate" name="kd_accurate" className="form-control" value={form.kd_accurate} onChange={handleFormChange} placeholder="Contoh: K0031" />
                 </div>
                 <div className="form-group">
                   <label className="form-label" htmlFor="alamat">Alamat</label>
