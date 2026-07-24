@@ -84,6 +84,60 @@ export default function AppLayout({ children, user, onLogout }) {
   const [cpForm, setCpForm] = useState({ old_password: '', new_password: '', confirm_password: '' });
   const [cpError, setCpError] = useState('');
   const [cpLoading, setCpLoading] = useState(false);
+  const [authorized, setAuthorized] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const path = window.location.pathname;
+
+    // Administrator always has full access
+    if (user.role === '1') {
+      setAuthorized(true);
+      return;
+    }
+
+    let requiredModule = null;
+    if (path.startsWith('/dashboard')) requiredModule = 'dashboard';
+    else if (path.startsWith('/master/customers')) requiredModule = 'customers';
+    else if (path.startsWith('/master/materials')) requiredModule = 'materials';
+    else if (path.startsWith('/master/machines')) requiredModule = 'machines';
+    else if (path.startsWith('/master/subconts')) requiredModule = 'subconts';
+    else if (path.startsWith('/master/drawings')) requiredModule = 'drawings';
+    else if (path.startsWith('/master/toolkind')) requiredModule = 'toolkind';
+    else if (path.startsWith('/master/sales')) requiredModule = 'sales';
+    else if (path.startsWith('/master/proses')) requiredModule = 'proses';
+    else if (path.startsWith('/master/users') || path.startsWith('/master/roles')) requiredModule = 'admin';
+    else if (path.startsWith('/wo')) requiredModule = 'wo';
+    else if (path.startsWith('/produksi/prepare')) requiredModule = 'produksi-prepare';
+    else if (path.startsWith('/produksi/fg')) requiredModule = 'produksi-fg';
+    else if (path.startsWith('/produksi/ng')) requiredModule = 'produksi-ng';
+    else if (path.startsWith('/delivery/customer')) requiredModule = 'delivery-customer';
+    else if (path.startsWith('/delivery/subcont')) requiredModule = 'delivery-subcont';
+    else if (path.startsWith('/invoice')) requiredModule = 'invoice';
+
+    if (requiredModule) {
+      if (requiredModule === 'admin') {
+        setAuthorized(false);
+      } else {
+        const perm = user.permissions?.find(p => p.module_name === requiredModule);
+        if (!perm || !perm.can_view) {
+          setAuthorized(false);
+        } else {
+          setAuthorized(true);
+        }
+      }
+    } else {
+      setAuthorized(true);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (!authorized) {
+      alert('Akses ditolak. Anda tidak memiliki izin untuk mengakses modul ini.');
+      window.location.href = '/home';
+    }
+  }, [authorized]);
 
   const handleChangePasswordSubmit = async (e) => {
     e.preventDefault();
@@ -137,6 +191,25 @@ export default function AppLayout({ children, user, onLogout }) {
 
     driverObj.drive();
   };
+
+  if (!user) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--bg, #f1f5f9)' }}>
+        <span className="spinner" style={{ borderColor: 'var(--text-muted, #94a3b8)', borderTopColor: 'var(--primary, #2563eb)', width: '32px', height: '32px' }} />
+      </div>
+    );
+  }
+
+  if (!authorized) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--bg, #f1f5f9)', gap: '12px' }}>
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--danger, #ef4444)" strokeWidth="2">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span style={{ fontWeight: '600', color: 'var(--text-secondary, #475569)', fontSize: '1rem' }}>Akses Ditolak</span>
+      </div>
+    );
+  }
 
   return (
     <div className="app-layout">
