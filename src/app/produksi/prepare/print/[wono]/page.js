@@ -69,7 +69,7 @@ export default function PrintProcessCardPage() {
         .header-table td { padding: 6px; }
         .routing-table th, .routing-table td { border: 1px solid #000; padding: 8px; text-align: left; }
         .routing-table th { background: #f1f5f9; font-weight: bold; }
-        .title { text-align: center; margin-bottom: 30px; font-size: 24px; font-weight: bold; text-transform: uppercase; border-bottom: 2px solid #000; padding-bottom: 10px; }
+        .title { text-align: center; margin-bottom: 15px; font-size: 24px; font-weight: bold; text-transform: uppercase; border-bottom: 2px solid #000; padding-bottom: 10px; }
       `}} />
 
       <div className="no-print" style={{ textAlign: 'center', padding: '20px', background: '#fff', borderBottom: '1px solid #e2e8f0', position: 'sticky', top: 0 }}>
@@ -90,18 +90,18 @@ export default function PrintProcessCardPage() {
       <div className="print-container">
         <div className="title">Process Card</div>
         
+        {header?.kd_hdproses && (
+          <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+            <img src={`http://bwipjs-api.metafloor.com/?bcid=code128&text=${encodeURIComponent(header.kd_hdproses)}&scale=3&height=10&includetext`} alt="barcode" style={{ display: 'inline-block' }} />
+          </div>
+        )}
+        
         <table className="header-table">
           <tbody>
             <tr>
               <td style={{ width: '150px', fontWeight: 'bold', verticalAlign: 'top' }}>NO W/O</td>
               <td style={{ width: '10px', verticalAlign: 'top' }}>:</td>
-              <td style={{ verticalAlign: 'top' }}>
-                {wo.wo_no}
-                <br/>
-                {header?.kd_hdproses && (
-                  <img src={`http://bwipjs-api.metafloor.com/?bcid=code128&text=${encodeURIComponent(header.kd_hdproses)}&scale=3&height=10&includetext`} alt="barcode" style={{ marginTop: '5px' }} />
-                )}
-              </td>
+              <td style={{ verticalAlign: 'top' }}>{wo.wo_no}</td>
               <td style={{ width: '150px', fontWeight: 'bold', verticalAlign: 'top' }}>KODE PRODUKSI</td>
               <td style={{ width: '10px', verticalAlign: 'top' }}>:</td>
               <td style={{ verticalAlign: 'top' }}>{header?.kd_hdproses || '-'}</td>
@@ -125,7 +125,7 @@ export default function PrintProcessCardPage() {
           </tbody>
         </table>
 
-        <h3 style={{ fontSize: '16px', borderBottom: '1px solid #ccc', paddingBottom: '4px', marginBottom: '10px' }}>Daftar Proses (Routing)</h3>
+        <h3 style={{ fontSize: '16px', borderBottom: '1px solid #ccc', paddingBottom: '4px', marginBottom: '10px' }}>Item Description</h3>
         <table className="routing-table">
           <thead>
             <tr>
