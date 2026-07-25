@@ -92,7 +92,7 @@ export default function PrintProcessCardPage() {
         
         {header?.kd_hdproses && (
           <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-            <img src={`http://bwipjs-api.metafloor.com/?bcid=code128&text=${encodeURIComponent(header.kd_hdproses)}&scale=3&height=10&includetext`} alt="barcode" style={{ display: 'inline-block' }} />
+            <img src={`http://bwipjs-api.metafloor.com/?bcid=code128&text=${encodeURIComponent(header.kd_hdproses)}&scale=2&height=10&includetext`} alt="barcode" style={{ display: 'inline-block' }} />
           </div>
         )}
         
@@ -125,7 +125,7 @@ export default function PrintProcessCardPage() {
           </tbody>
         </table>
 
-        <h3 style={{ fontSize: '16px', borderBottom: '1px solid #ccc', paddingBottom: '4px', marginBottom: '10px' }}>Item Description</h3>
+        <h3 style={{ fontSize: '16px', borderBottom: '1px solid #ccc', paddingBottom: '4px', marginBottom: '10px' }}>{wo.descrip || '-'}</h3>
         <table className="routing-table">
           <thead>
             <tr>
