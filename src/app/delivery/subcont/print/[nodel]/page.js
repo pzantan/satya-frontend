@@ -113,7 +113,6 @@ export default function PrintSubcontDeliveryPage() {
             <p>Kawasan Industri Delta Silicon 2</p>
             <p>Jl. Waru Delta Niaga Blok B9 Cikarang, Cibatu, Cikarang Sel.</p>
             <p>Kabupaten Bekasi, Jawa Barat 17550</p>
-            <p>Telp: (021) 8983xxxx | Email: info@satyatehnik.co.id</p>
           </div>
           <div style={{ textAlign: 'right', fontSize: '11px', color: '#64748b', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             <div>Tanggal Cetak: {new Date().toLocaleDateString('id-ID')}</div>
