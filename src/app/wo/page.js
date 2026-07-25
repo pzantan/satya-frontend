@@ -41,15 +41,27 @@ export default function WorkOrderPage() {
     setImportError('');
     setImportSuccess('');
     try {
+      const token = localStorage.getItem('satya_token');
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
       const formData = new FormData();
       formData.append('xmlfile', xmlFile);
-      const res = await api.post('/api/wo/import-xml/preview', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+      
+      const response = await fetch(`${API_BASE}/api/wo/import-xml/preview`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
       });
+
+      const res = await response.json();
+      if (!response.ok) {
+        throw new Error(res.error || 'Gagal memproses pratinjau file XML.');
+      }
       setPreviewList(res.data);
     } catch (err) {
       console.error(err);
-      setImportError(err.response?.data?.error || 'Gagal memproses pratinjau file XML.');
+      setImportError(err.message || 'Gagal memproses pratinjau file XML.');
     } finally {
       setCheckingFile(false);
     }
