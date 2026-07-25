@@ -160,7 +160,7 @@ export default function SubcontDeliveryListPage() {
                     <th onClick={() => handleSort('tgldel')} style={{ cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}>Tgl Kirim<SortIcon col="tgldel" /></th>
                     <th onClick={() => handleSort('nm_sub')} style={{ cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}>Subkontraktor (Supplier)<SortIcon col="nm_sub" /></th>
                     <th onClick={() => handleSort('no_accurate')} style={{ cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}>Accurate No (SJ)<SortIcon col="no_accurate" /></th>
-                    <th style={{ textAlign: 'center', width: '200px' }}>Action</th>
+                    <th style={{ textAlign: 'center', width: '240px' }}>Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -179,6 +179,9 @@ export default function SubcontDeliveryListPage() {
                           <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
                             <button className="btn btn-outline" style={{ padding: '4px 10px', fontSize: '13px' }} onClick={() => openDetailModal(row.nodel)}>
                               Detail
+                            </button>
+                            <button className="btn btn-primary" style={{ padding: '4px 10px', fontSize: '13px', backgroundColor: '#3b82f6', borderColor: '#3b82f6' }} onClick={() => window.open(`/delivery/subcont/print/${encodeURIComponent(row.nodel)}`, '_blank')}>
+                              Print
                             </button>
                             <button className="btn btn-danger" style={{ padding: '4px 10px', fontSize: '13px', backgroundColor: '#ef4444', borderColor: '#ef4444' }} onClick={() => handleDelete(row.nodel)}>
                               Delete
@@ -269,7 +272,10 @@ export default function SubcontDeliveryListPage() {
                 </table>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
+                <button type="button" className="btn btn-primary" style={{ backgroundColor: '#3b82f6', borderColor: '#3b82f6' }} onClick={() => window.open(`/delivery/subcont/print/${encodeURIComponent(selectedDelivery.nodel)}`, '_blank')}>
+                  Print
+                </button>
                 <button type="button" className="btn btn-default" onClick={() => setIsDetailModalOpen(false)}>
                   Close
                 </button>
