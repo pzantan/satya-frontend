@@ -67,6 +67,19 @@ export default function WorkOrderPage() {
     }
   };
 
+  const toggleItemSelection = (soIdx, itemIdx) => {
+    setPreviewList(prev => {
+      if (!prev) return prev;
+      const newList = [...prev];
+      const so = { ...newList[soIdx] };
+      const items = [...so.items];
+      items[itemIdx] = { ...items[itemIdx], selected: !items[itemIdx].selected };
+      so.items = items;
+      newList[soIdx] = so;
+      return newList;
+    });
+  };
+
   const handleExecuteImport = async () => {
     if (!previewList) return;
     setImportingData(true);
@@ -492,30 +505,43 @@ export default function WorkOrderPage() {
                           <table className="table table-bordered" style={{ fontSize: '12px', margin: 0 }}>
                             <thead style={{ backgroundColor: '#f8fafc' }}>
                               <tr>
+                                <th style={{ width: '50px', textAlign: 'center' }}>Pilih</th>
                                 <th>No Drawing (Accurate Item)</th>
                                 <th>Deskripsi Item</th>
                                 <th style={{ textAlign: 'right' }}>Qty</th>
                                 <th style={{ textAlign: 'right' }}>Harga Satuan</th>
-                                <th>Status Gambar</th>
+                                <th>Status Gambar / WO</th>
                               </tr>
                             </thead>
                             <tbody>
-                              {so.items.map((item, itemIdx) => (
-                                <tr key={itemIdx}>
-                                  <td style={{ fontWeight: '600' }}>{item.itemNo}</td>
-                                  <td>{item.descrip}</td>
-                                  <td align="right">{item.qty} pcs</td>
-                                  <td align="right">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(item.price)}</td>
-                                  <td>
-                                    <span style={{ 
-                                      color: item.status === 'NEW_DRAWING' ? '#b58900' : '#2aa198',
-                                      fontWeight: '600'
-                                    }}>
-                                      {item.statusText}
-                                    </span>
-                                  </td>
-                                </tr>
-                              ))}
+                              {so.items.map((item, itemIdx) => {
+                                const isAlreadyExists = item.status === 'ALREADY_EXISTS';
+                                return (
+                                  <tr key={itemIdx} style={{ backgroundColor: isAlreadyExists ? '#fef2f2' : 'inherit' }}>
+                                    <td align="center">
+                                      <input 
+                                        type="checkbox" 
+                                        disabled={isAlreadyExists}
+                                        checked={item.selected || false}
+                                        onChange={() => toggleItemSelection(idx, itemIdx)}
+                                        style={{ cursor: isAlreadyExists ? 'not-allowed' : 'pointer', width: '16px', height: '16px' }}
+                                      />
+                                    </td>
+                                    <td style={{ fontWeight: '600' }}>{item.itemNo}</td>
+                                    <td>{item.descrip}</td>
+                                    <td align="right">{item.qty} pcs</td>
+                                    <td align="right">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(item.price)}</td>
+                                    <td>
+                                      <span style={{ 
+                                        color: isAlreadyExists ? '#ef4444' : (item.status === 'NEW_DRAWING' ? '#b58900' : '#10b981'),
+                                        fontWeight: '600'
+                                      }}>
+                                        {item.statusText}
+                                      </span>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
                             </tbody>
                           </table>
                         </div>
@@ -541,7 +567,7 @@ export default function WorkOrderPage() {
                       type="button" 
                       className="btn btn-primary" 
                       onClick={handleExecuteImport} 
-                      disabled={previewList.some(so => so.customerStatus === 'NOT_FOUND') || importingData}
+                      disabled={previewList.some(so => so.customerStatus === 'NOT_FOUND') || !previewList.some(so => so.items.some(item => item.selected)) || importingData}
                     >
                       {importingData ? 'Sedang Mengimpor...' : 'Jalankan Eksekusi'}
                     </button>
