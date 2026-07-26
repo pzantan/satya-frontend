@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { useRouter } from 'next/navigation';
 import AppLayout from '@/components/AppLayout';
 import api from '@/lib/api';
@@ -261,52 +261,120 @@ export default function ReportPage() {
               <div className="table-responsive">
                 
                 {/* 1. RENDER MATRIX ORDER CUSTOMER */}
-                {activeReport === 'oc' && (
-                  <table className="table table-bordered table-hover" style={{ fontSize: '13px' }}>
-                    <thead style={{ backgroundColor: '#f8fafc' }}>
-                      <tr>
-                        <th>Nama Customer</th>
-                        {['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'].map(m => (
-                          <th key={m} style={{ textAlign: 'right', minWidth: '85px' }}>{m}</th>
-                        ))}
-                        <th style={{ textAlign: 'right', minWidth: '100px', fontWeight: 'bold' }}>Total</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {reportData.map((row) => (
-                        <tr key={row.id_customer}>
-                          <td><strong>{row.nm_customer}</strong></td>
-                          {Array.from({ length: 12 }, (_, i) => i + 1).map(m => {
-                            const val = row[`bln${m}`] || 0;
-                            return (
-                              <td key={m} align="right">
-                                {val > 0 ? (
-                                  <span 
-                                    onClick={() => openOcDetail(row.id_customer, row.nm_customer, m)}
-                                    style={{ color: '#4f46e5', cursor: 'pointer', textDecoration: 'underline', fontWeight: '500' }}
-                                  >
-                                    {formatCurrency(val)}
-                                  </span>
-                                ) : '-'}
+                {activeReport === 'oc' && (() => {
+                  const activeOcData = reportData.filter(row => row.total > 0);
+                  if (activeOcData.length === 0) {
+                    return (
+                      <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-muted)' }}>
+                        Tidak ada customer dengan data order untuk tahun ini.
+                      </div>
+                    );
+                  }
+                  return (
+                    <div style={{ maxHeight: '600px', overflowY: 'auto', overflowX: 'auto', border: '1px solid #cbd5e1', borderRadius: '4px' }}>
+                      <table className="table table-bordered table-hover" style={{ fontSize: '13px', margin: 0, borderCollapse: 'separate', borderSpacing: 0 }}>
+                        <thead style={{ position: 'sticky', top: 0, zIndex: 30 }}>
+                          <tr style={{ backgroundColor: '#f8fafc' }}>
+                            <th style={{ 
+                              position: 'sticky', 
+                              top: 0, 
+                              left: 0, 
+                              backgroundColor: '#f8fafc', 
+                              zIndex: 40, 
+                              borderRight: '2px solid #cbd5e1',
+                              borderBottom: '2px solid #cbd5e1'
+                            }}>
+                              Nama Customer
+                            </th>
+                            {['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'].map(m => (
+                              <th key={m} style={{ 
+                                position: 'sticky', 
+                                top: 0, 
+                                backgroundColor: '#f8fafc', 
+                                zIndex: 30, 
+                                textAlign: 'right', 
+                                minWidth: '95px',
+                                borderBottom: '2px solid #cbd5e1'
+                              }}>
+                                {m}
+                              </th>
+                            ))}
+                            <th style={{ 
+                              position: 'sticky', 
+                              top: 0, 
+                              backgroundColor: '#f8fafc', 
+                              zIndex: 30, 
+                              textAlign: 'right', 
+                              minWidth: '110px', 
+                              fontWeight: 'bold',
+                              borderBottom: '2px solid #cbd5e1'
+                            }}>
+                              Total
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {activeOcData.map((row) => (
+                            <tr key={row.id_customer}>
+                              <td style={{ 
+                                position: 'sticky', 
+                                left: 0, 
+                                backgroundColor: '#fff', 
+                                zIndex: 20, 
+                                borderRight: '2px solid #cbd5e1',
+                                fontWeight: '600'
+                              }}>
+                                {row.nm_customer}
                               </td>
-                            );
-                          })}
-                          <td align="right" style={{ fontWeight: 'bold', backgroundColor: '#f8fafc' }}>{formatCurrency(row.total)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                    <tfoot style={{ backgroundColor: '#f1f5f9', fontWeight: 'bold' }}>
-                      <tr>
-                        <td>Grand Total</td>
-                        {Array.from({ length: 12 }, (_, i) => i + 1).map(m => {
-                          const mTotal = reportData.reduce((acc, row) => acc + (row[`bln${m}`] || 0), 0);
-                          return <td key={m} align="right">{formatCurrency(mTotal)}</td>;
-                        })}
-                        <td align="right">{formatCurrency(reportData.reduce((acc, row) => acc + row.total, 0))}</td>
-                      </tr>
-                    </tfoot>
-                  </table>
-                )}
+                              {Array.from({ length: 12 }, (_, i) => i + 1).map(m => {
+                                const val = row[`bln${m}`] || 0;
+                                return (
+                                  <td key={m} align="right">
+                                    {val > 0 ? (
+                                      <span 
+                                        onClick={() => openOcDetail(row.id_customer, row.nm_customer, m)}
+                                        style={{ color: '#4f46e5', cursor: 'pointer', textDecoration: 'underline', fontWeight: '500' }}
+                                      >
+                                        {formatCurrency(val)}
+                                      </span>
+                                    ) : '-'}
+                                  </td>
+                                );
+                              })}
+                              <td align="right" style={{ fontWeight: 'bold', backgroundColor: '#f8fafc' }}>{formatCurrency(row.total)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot style={{ position: 'sticky', bottom: 0, zIndex: 30 }}>
+                          <tr style={{ backgroundColor: '#f1f5f9', fontWeight: 'bold' }}>
+                            <td style={{ 
+                              position: 'sticky', 
+                              bottom: 0, 
+                              left: 0, 
+                              backgroundColor: '#f1f5f9', 
+                              zIndex: 40, 
+                              borderRight: '2px solid #cbd5e1',
+                              borderTop: '2px solid #cbd5e1'
+                            }}>
+                              Grand Total
+                            </td>
+                            {Array.from({ length: 12 }, (_, i) => i + 1).map(m => {
+                              const mTotal = activeOcData.reduce((acc, row) => acc + (row[`bln${m}`] || 0), 0);
+                              return (
+                                <td key={m} align="right" style={{ borderTop: '2px solid #cbd5e1', backgroundColor: '#f1f5f9' }}>
+                                  {formatCurrency(mTotal)}
+                                </td>
+                              );
+                            })}
+                            <td align="right" style={{ borderTop: '2px solid #cbd5e1', backgroundColor: '#f1f5f9' }}>
+                              {formatCurrency(activeOcData.reduce((acc, row) => acc + row.total, 0))}
+                            </td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+                  );
+                })()}
 
                 {/* 2. RENDER GENERAL REPORT SUMMARY */}
                 {activeReport === 'general' && (
@@ -323,7 +391,7 @@ export default function ReportPage() {
                     </thead>
                     <tbody>
                       {reportData.map((salesGroup) => (
-                        <>
+                        <Fragment key={`sales-general-${salesGroup.id_sales}`}>
                           {/* Sales Header Row */}
                           <tr key={`sales-${salesGroup.id_sales}`} style={{ backgroundColor: '#f1f5f9', fontWeight: 'bold' }}>
                             <td>👤 Sales: {salesGroup.nm_sales}</td>
@@ -351,7 +419,7 @@ export default function ReportPage() {
                               <td align="right">{formatCurrency(cust.delev)}</td>
                             </tr>
                           ))}
-                        </>
+                        </Fragment>
                       ))}
                     </tbody>
                     <tfoot style={{ backgroundColor: '#e2e8f0', fontWeight: 'bold' }}>
@@ -378,7 +446,7 @@ export default function ReportPage() {
                     </thead>
                     <tbody>
                       {reportData.map((salesGroup) => (
-                        <>
+                        <Fragment key={`sales-invoice-${salesGroup.id_sales}`}>
                           <tr key={`sales-${salesGroup.id_sales}`} style={{ backgroundColor: '#f1f5f9', fontWeight: 'bold' }}>
                             <td>👤 Sales: {salesGroup.nm_sales}</td>
                             <td align="right">{formatCurrency(salesGroup.total)}</td>
@@ -389,7 +457,7 @@ export default function ReportPage() {
                               <td align="right">{formatCurrency(cust.jumlah)}</td>
                             </tr>
                           ))}
-                        </>
+                        </Fragment>
                       ))}
                     </tbody>
                     <tfoot style={{ backgroundColor: '#e2e8f0', fontWeight: 'bold' }}>
