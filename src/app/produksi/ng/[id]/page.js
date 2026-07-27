@@ -135,7 +135,7 @@ export default function ReceiptNgPage() {
         qtyng: ngDetail.qtyng
       });
 
-      alert('Receipt NG Berhasil Diproses! Work Order perbaikan baru telah dibuat.');
+      alert('Receipt NG Berhasil Diproses!');
       router.push('/produksi/ng');
     } catch (err) {
       console.error(err);
