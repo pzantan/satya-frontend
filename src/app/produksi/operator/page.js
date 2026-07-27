@@ -46,8 +46,8 @@ export default function OperatorPage() {
       if (res.data?.activeProcess && res.data.activeProcess.statuson === '1') {
         const p = res.data.activeProcess;
         const target = res.data.wo.qty || 0;
-        const done = (p.fg_item || 0) + (p.ng_item || 0);
-        setQtyOk(target - done);
+        const done = p.fg_item || 0;
+        setQtyOk(Math.max(0, target - done));
         setQtyNg(0);
       }
       
@@ -90,7 +90,7 @@ export default function OperatorPage() {
     if (e) e.preventDefault();
     if (!data?.activeProcess || !data?.activeDetail || !loadedKodeProduksi) return;
     
-    const maxQty = data.wo.qty - ((data.activeProcess.fg_item||0) + (data.activeProcess.ng_item||0));
+    const maxQty = data.wo.qty - (data.activeProcess.fg_item || 0);
     const totalInput = parseInt(qtyOk) + parseInt(qtyNg);
     
     if (totalInput > maxQty) {
